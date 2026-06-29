@@ -1,0 +1,28 @@
+# ===== 编译产物 =====
+[Bb]in/
+[Oo]bj/
+
+# ===== 发布 / 分发产物（含自包含大 exe，切勿提交）=====
+dist/
+[Pp]ublish/
+
+# ===== 调试符号 =====
+*.pdb
+
+# ===== Claude Code 本地状态 =====
+.claude/
+
+# ===== Visual Studio / Rider / VS Code =====
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+
+# ===== NuGet =====
+*.nupkg
+packages/
+
+# ===== 系统 =====
+Thumbs.db
+.DS_Store

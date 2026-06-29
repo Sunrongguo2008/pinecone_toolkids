@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>ToolkidsTestApp</AssemblyName>
+    <RootNamespace>ToolkidsTestApp</RootNamespace>
+    <!-- 仅用于在本机(Win11)测试，依赖已随 SDK 安装的 .NET 8 桌面运行时，体积小 -->
+  </PropertyGroup>
+
+</Project>

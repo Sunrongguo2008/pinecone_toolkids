@@ -1,0 +1,20 @@
+# 默认按文本处理并规范化换行
+* text=auto
+
+# Windows 批处理必须用 CRLF（用 LF 会被 cmd 解析错乱）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 源码统一 LF
+*.cs   text eol=lf
+*.csproj text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.manifest text eol=lf
+
+# 二进制文件不做换行转换
+*.png binary
+*.jpg binary
+*.ico binary
+*.exe binary
+*.dll binary
