@@ -22,14 +22,16 @@ namespace Toolkids.Services.Sandbox
         public string RegDir => Path.Combine(BackupDir, "reg");
         public string FilesDir => Path.Combine(BackupDir, "files");
 
-        public string RegFile(string rule) => Path.Combine(RegDir, EnvPaths.SafeName(rule) + ".reg");
+        public string RegFile(string rule, RegView view) =>
+            Path.Combine(RegDir, EnvPaths.SafeName(rule) + (view == RegView.Bit32 ? ".32.reg" : ".64.reg"));
         public string FileStore(string rule) => Path.Combine(FilesDir, EnvPaths.SafeName(rule));
 
         /// <summary>该软件是否已有任何备份内容（决定启动时要不要还原）。</summary>
         public bool HasAnyBackup(SandboxRules rules)
         {
             foreach (string r in rules.Registry)
-                if (File.Exists(RegFile(r))) return true;
+                foreach (RegView v in RegistryHelper.ViewsFor(r))
+                    if (File.Exists(RegFile(r, v))) return true;
             foreach (string f in rules.Files)
                 if (FileOps.Exists(FileStore(f))) return true;
             return false;

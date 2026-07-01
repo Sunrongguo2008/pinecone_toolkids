@@ -30,6 +30,7 @@ namespace Toolkids.UI
         private ImageList _iconListSmall = null!;
         private Label _emptyHint = null!;
         private Label _status = null!;
+        private TextBox _search = null!;
 
         public MainForm(AppServices svc)
         {
@@ -66,6 +67,9 @@ namespace Toolkids.UI
             top.Controls.Add(btnSettings);
             top.Controls.Add(btnRefresh);
             top.Controls.Add(btnAbout);
+            _search = new TextBox { Width = 200, PlaceholderText = "搜索软件（所有分类）…", Margin = new Padding(12, 10, 0, 0) };
+            _search.TextChanged += (s, e) => RefreshTools();
+            top.Controls.Add(_search);
 
             // 左侧分类
             var left = new Panel { Dock = DockStyle.Left, Width = 260, Padding = new Padding(10) };
@@ -233,6 +237,8 @@ namespace Toolkids.UI
 
         private void RefreshTools()
         {
+            string q = _search.Text.Trim();
+
             _toolList.BeginUpdate();
             _toolList.Items.Clear();
             _iconList.Images.Clear();
@@ -240,42 +246,69 @@ namespace Toolkids.UI
             int iconSz = _config.IconSize < 32 ? 64 : _config.IconSize;
             if (_iconList.ImageSize.Width != iconSz) _iconList.ImageSize = new Size(iconSz, iconSz);
 
-            Category? cat = CurrentCategory;
-            int count = 0;
-            if (cat != null)
+            IReadOnlyList<ToolItem> tools;
+            if (q.Length > 0)
             {
-                foreach (ToolItem tool in _svc.Tools.LoadTools(_config, cat))
-                {
-                    Image? img = _svc.Icons.GetIcon(tool);
-                    string imgKey = "";
-                    if (img != null)
-                    {
-                        imgKey = tool.FolderName;
-                        if (!_iconList.Images.ContainsKey(imgKey))
-                        {
-                            _iconList.Images.Add(imgKey, img);
-                            _iconListSmall.Images.Add(imgKey, img);
-                        }
-                    }
+                tools = SearchAllTools(q);            // 有搜索词：跨所有分类
+            }
+            else
+            {
+                Category? cat = CurrentCategory;      // 无搜索词：当前分类
+                tools = cat != null ? _svc.Tools.LoadTools(_config, cat) : Array.Empty<ToolItem>();
+            }
 
-                    var item = new ListViewItem(tool.DisplayName)
+            foreach (ToolItem tool in tools)
+            {
+                Image? img = _svc.Icons.GetIcon(tool);
+                string imgKey = "";
+                if (img != null)
+                {
+                    imgKey = tool.FolderName;
+                    if (!_iconList.Images.ContainsKey(imgKey))
                     {
-                        Tag = tool,
-                        ImageKey = imgKey,
-                        ToolTipText = tool.Config.Description
-                    };
-                    item.SubItems.Add(tool.Config.Description);
-                    _toolList.Items.Add(item);
-                    count++;
+                        _iconList.Images.Add(imgKey, img);
+                        _iconListSmall.Images.Add(imgKey, img);
+                    }
                 }
+
+                var item = new ListViewItem(tool.DisplayName)
+                {
+                    Tag = tool,
+                    ImageKey = imgKey,
+                    ToolTipText = tool.Config.Description
+                };
+                item.SubItems.Add(tool.Config.Description);
+                _toolList.Items.Add(item);
             }
 
             _toolList.EndUpdate();
-            _emptyHint.Text = _config.Categories.Count == 0
-                ? "还没有分类。\r\n点左下角“新建”先创建一个分类，再添加软件。"
-                : "这个分类还没有软件。\r\n点上方“添加软件”把工具加进来。";
+
+            int count = tools.Count;
+            _emptyHint.Text = q.Length > 0
+                ? "没有匹配的软件。"
+                : (_config.Categories.Count == 0
+                    ? "还没有分类。\r\n右键左侧列表新建一个分类，再添加软件。"
+                    : "这个分类还没有软件。\r\n点上方“添加软件”把工具加进来。");
             _emptyHint.Visible = count == 0;
             _toolList.Visible = count > 0;
+        }
+
+        // 跨所有分类按“名称/简介”搜索，按文件夹去重
+        private IReadOnlyList<ToolItem> SearchAllTools(string q)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var result = new List<ToolItem>();
+            foreach (Category cat in _config.Categories)
+            {
+                foreach (ToolItem tool in _svc.Tools.LoadTools(_config, cat))
+                {
+                    bool match = tool.DisplayName.Contains(q, StringComparison.OrdinalIgnoreCase)
+                                 || tool.Config.Description.Contains(q, StringComparison.OrdinalIgnoreCase);
+                    if (match && seen.Add(tool.FolderName))
+                        result.Add(tool);
+                }
+            }
+            return result;
         }
 
         // ============ 分类操作 ============

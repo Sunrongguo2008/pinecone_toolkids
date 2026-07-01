@@ -139,7 +139,7 @@ namespace Toolkids.Services.Sandbox
         {
             var list = new List<ConflictItem>();
             foreach (string r in rules.Registry)
-                if (RegistryHelper.KeyExists(r))
+                if (RegistryHelper.KeyExistsAny(r))
                     list.Add(new ConflictItem { Kind = ConflictKind.Registry, Rule = r, Target = r });
             foreach (string f in rules.Files)
             {
@@ -153,10 +153,11 @@ namespace Toolkids.Services.Sandbox
         private void Restore(SandboxStorage storage, List<string> reg, List<string> files)
         {
             foreach (string r in reg)
-            {
-                string regFile = storage.RegFile(r);
-                if (File.Exists(regFile)) { RegistryHelper.Import(regFile); _log.Info("还原注册表：" + r); }
-            }
+                foreach (RegView v in RegistryHelper.ViewsFor(r))
+                {
+                    string regFile = storage.RegFile(r, v);
+                    if (File.Exists(regFile)) { RegistryHelper.Import(regFile, v); _log.Info($"还原注册表[{v}]：" + r); }
+                }
             foreach (string f in files)
             {
                 string store = storage.FileStore(f);
@@ -170,11 +171,12 @@ namespace Toolkids.Services.Sandbox
             Directory.CreateDirectory(storage.FilesDir);
 
             foreach (string r in rules.Registry)
-            {
-                if (!RegistryHelper.KeyExists(r)) continue;
-                try { RegistryHelper.Export(r, storage.RegFile(r)); _log.Info("备份注册表：" + r); }
-                catch (Exception ex) { _log.Error("备份注册表失败：" + r, ex); }
-            }
+                foreach (RegView v in RegistryHelper.ViewsFor(r))
+                {
+                    if (!RegistryHelper.KeyExists(r, v)) continue;
+                    try { RegistryHelper.Export(r, storage.RegFile(r, v), v); _log.Info($"备份注册表[{v}]：" + r); }
+                    catch (Exception ex) { _log.Error("备份注册表失败：" + r, ex); }
+                }
             foreach (string f in rules.Files)
             {
                 string target = EnvPaths.Expand(f);
@@ -193,10 +195,11 @@ namespace Toolkids.Services.Sandbox
         private void CleanupAll(SandboxRules rules)
         {
             foreach (string r in rules.Registry)
-            {
-                try { RegistryHelper.DeleteKey(r); _log.Info("清理注册表：" + r); }
-                catch (Exception ex) { _log.Error("清理注册表失败：" + r, ex); }
-            }
+                foreach (RegView v in RegistryHelper.ViewsFor(r))
+                {
+                    try { RegistryHelper.DeleteKey(r, v); _log.Info($"清理注册表[{v}]：" + r); }
+                    catch (Exception ex) { _log.Error("清理注册表失败：" + r, ex); }
+                }
             foreach (string f in rules.Files)
             {
                 try { FileOps.DeleteAny(EnvPaths.Expand(f)); _log.Info("清理目录：" + f); }

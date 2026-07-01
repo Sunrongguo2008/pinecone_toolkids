@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Toolkids.Models;
 using Toolkids.Services;
@@ -22,6 +24,8 @@ namespace Toolkids.UI.Dialogs
         private readonly CheckBox _confirmConflict = new() { Text = "还原前若系统已存在同名项，弹出确认", AutoSize = true };
         private readonly CheckBox _askBackup = new() { Text = "软件退出后询问是否备份并清理", AutoSize = true };
         private readonly CheckBox _skipPE = new() { Text = "在 WinPE 中跳过沙盒备份/清理", AutoSize = true };
+        private readonly TextBox _regRoots = new() { Multiline = true, ScrollBars = ScrollBars.Vertical, WordWrap = false, Height = 72, Anchor = AnchorStyles.Left | AnchorStyles.Right, Font = new Font("Consolas", 9f) };
+        private readonly TextBox _fileRoots = new() { Multiline = true, ScrollBars = ScrollBars.Vertical, WordWrap = false, Height = 72, Anchor = AnchorStyles.Left | AnchorStyles.Right, Font = new Font("Consolas", 9f) };
 
         public SettingsForm(GlobalConfig cfg, AppPaths paths)
         {
@@ -61,6 +65,12 @@ namespace Toolkids.UI.Dialogs
             AddSpan(grid, _confirmConflict, ref r);
             AddSpan(grid, _askBackup, ref r);
             AddSpan(grid, _skipPE, ref r);
+
+            AddSpan(grid, new Label { Text = "── 扫描范围（“扫描沙盒”时监视这些位置的变化）──", AutoSize = true, Margin = new Padding(0, 10, 0, 2) }, ref r);
+            AddSpan(grid, new Label { Text = "注册表位置（每行一个，如 HKCU\\Software）", AutoSize = true }, ref r);
+            AddSpan(grid, _regRoots, ref r);
+            AddSpan(grid, new Label { Text = "文件 / 目录位置（每行一个，支持 %AppData% 等）", AutoSize = true }, ref r);
+            AddSpan(grid, _fileRoots, ref r);
 
             var info = new Label
             {
@@ -113,6 +123,8 @@ namespace Toolkids.UI.Dialogs
             _confirmConflict.Checked = _cfg.Settings.ConfirmConflictBeforeRestore;
             _askBackup.Checked = _cfg.Settings.AskBackupOnExit;
             _skipPE.Checked = _cfg.Settings.SkipSandboxInPE;
+            _regRoots.Lines = _cfg.Settings.Snapshot.RegistryRoots.ToArray();
+            _fileRoots.Lines = _cfg.Settings.Snapshot.FileRoots.ToArray();
         }
 
         private void OnSave(object? sender, EventArgs e)
@@ -126,9 +138,14 @@ namespace Toolkids.UI.Dialogs
             _cfg.Settings.ConfirmConflictBeforeRestore = _confirmConflict.Checked;
             _cfg.Settings.AskBackupOnExit = _askBackup.Checked;
             _cfg.Settings.SkipSandboxInPE = _skipPE.Checked;
+            _cfg.Settings.Snapshot.RegistryRoots = CleanLines(_regRoots.Lines);
+            _cfg.Settings.Snapshot.FileRoots = CleanLines(_fileRoots.Lines);
 
             DialogResult = DialogResult.OK;
             Close();
         }
+
+        private static List<string> CleanLines(string[] lines) =>
+            lines.Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
     }
 }

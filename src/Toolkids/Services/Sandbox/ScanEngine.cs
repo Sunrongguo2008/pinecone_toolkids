@@ -57,7 +57,7 @@ namespace Toolkids.Services.Sandbox
             (List<string> regKeys, List<string> files) = Snapshotter.Diff(before, after);
 
             var items = new List<ScanItem>();
-            foreach (string r in regKeys) items.Add(new ScanItem { Kind = ScanKind.Registry, Rule = r });
+            foreach (string r in regKeys) items.Add(new ScanItem { Kind = ScanKind.Registry, Rule = RegistryHelper.NormalizeWow(r) });
             foreach (string f in files) items.Add(new ScanItem { Kind = ScanKind.File, Rule = EnvPaths.ToPortable(f) });
 
             // 去重并排序（注册表在前）
