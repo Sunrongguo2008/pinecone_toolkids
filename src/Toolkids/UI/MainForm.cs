@@ -60,9 +60,12 @@ namespace Toolkids.UI
             btnSettings.Click += (s, e) => OpenSettings();
             var btnRefresh = MakeButton("刷新");
             btnRefresh.Click += (s, e) => ReloadAll();
+            var btnAbout = MakeButton("关于");
+            btnAbout.Click += (s, e) => OpenAbout();
             top.Controls.Add(btnAddTool);
             top.Controls.Add(btnSettings);
             top.Controls.Add(btnRefresh);
+            top.Controls.Add(btnAbout);
 
             // 左侧分类
             var left = new Panel { Dock = DockStyle.Left, Width = 210, Padding = new Padding(8) };
@@ -569,6 +572,12 @@ namespace Toolkids.UI
             ThemeManager.Apply(this, _theme);
             ApplyLayout();
             RefreshTools();
+        }
+
+        private void OpenAbout()
+        {
+            using var dlg = new AboutForm(_svc.Paths);
+            dlg.ShowDialog(this);
         }
 
         // ============ 辅助 ============
