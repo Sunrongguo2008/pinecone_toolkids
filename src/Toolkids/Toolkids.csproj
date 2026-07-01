@@ -13,7 +13,7 @@
     <SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
     <!-- net6.0 已 EOL，对本离线工具无影响，关闭该提示让编译输出干净 -->
     <NoWarn>NETSDK1138</NoWarn>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Product>Toolkids 便携工具箱</Product>
     <Company>Toolkids</Company>
   </PropertyGroup>
