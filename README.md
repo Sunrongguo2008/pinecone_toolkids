@@ -1,5 +1,11 @@
 # 🧰 Toolkids 便携工具箱
 
+![License](https://img.shields.io/github/license/Sunrongguo2008/pinecone_toolkids)
+![Release](https://img.shields.io/github/v/release/Sunrongguo2008/pinecone_toolkids)
+![Downloads](https://img.shields.io/github/downloads/Sunrongguo2008/pinecone_toolkids/total)
+![Platform](https://img.shields.io/badge/platform-Win7~11%20%7C%20PE-blue)
+![.NET](https://img.shields.io/badge/.NET-6.0-512BD4)
+
 给绿色软件穿上"隐身衣"的 Windows 工具箱。
 
 Windows 便携式工具箱（类“图吧工具箱”），核心特色是给绿色软件做**便携化运行**：启动前还原、退出后备份并清理系统里的注册表/目录，做到“用完不留配置垃圾”；并带一个**沙盒扫描**功能，自动找出软件用到的注册表项/目录、一键生成规则。自定添加你的软件，**把它变成你的专属工具箱**！

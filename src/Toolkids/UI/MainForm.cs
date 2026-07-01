@@ -27,6 +27,7 @@ namespace Toolkids.UI
         private ListBox _categoryList = null!;
         private ListView _toolList = null!;
         private ImageList _iconList = null!;
+        private ImageList _iconListSmall = null!;
         private Label _emptyHint = null!;
         private Label _status = null!;
 
@@ -48,9 +49,8 @@ namespace Toolkids.UI
         {
             Text = "Toolkids 便携工具箱";
             StartPosition = FormStartPosition.CenterScreen;
-            ClientSize = new Size(980, 640);
-            MinimumSize = new Size(780, 500);
-            Font = new Font("Microsoft YaHei UI", 9f);
+            ClientSize = new Size(1120, 720);
+            MinimumSize = new Size(900, 580);
 
             // 顶部工具条（按内容自适应高度，避免高 DPI 裁剪）
             var top = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, Padding = new Padding(10, 8, 10, 8) };
@@ -68,8 +68,8 @@ namespace Toolkids.UI
             top.Controls.Add(btnAbout);
 
             // 左侧分类
-            var left = new Panel { Dock = DockStyle.Left, Width = 210, Padding = new Padding(8) };
-            var leftHeader = new Label { Text = "分类", Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2, 2, 0, 6), Font = new Font("Microsoft YaHei UI", 10.5f, FontStyle.Bold) };
+            var left = new Panel { Dock = DockStyle.Left, Width = 240, Padding = new Padding(10) };
+            var leftHeader = new Label { Text = "分类", Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2, 2, 0, 8), Font = new Font("Microsoft YaHei UI", 13f, FontStyle.Bold) };
             _categoryList = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
             _categoryList.SelectedIndexChanged += (s, e) => RefreshTools();
             _categoryList.ContextMenuStrip = BuildCategoryMenu();
@@ -90,7 +90,8 @@ namespace Toolkids.UI
 
             // 右侧软件区
             var right = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8) };
-            _iconList = new ImageList { ImageSize = new Size(48, 48), ColorDepth = ColorDepth.Depth32Bit };
+            _iconList = new ImageList { ImageSize = new Size(64, 64), ColorDepth = ColorDepth.Depth32Bit };
+            _iconListSmall = new ImageList { ImageSize = new Size(24, 24), ColorDepth = ColorDepth.Depth32Bit };
             _toolList = new ListView
             {
                 Dock = DockStyle.Fill,
@@ -99,7 +100,7 @@ namespace Toolkids.UI
                 HideSelection = false,
                 ShowItemToolTips = true,
                 LargeImageList = _iconList,
-                SmallImageList = _iconList
+                SmallImageList = _iconListSmall
             };
             _toolList.ItemActivate += (s, e) => RunSelectedTool();
             _toolList.ContextMenuStrip = BuildToolMenu();
@@ -121,7 +122,7 @@ namespace Toolkids.UI
             right.Controls.Add(_emptyHint);
             right.Controls.Add(_toolList);
 
-            _status = new Label { Dock = DockStyle.Bottom, AutoSize = false, Height = 26, TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(10, 0, 0, 0), Text = "就绪" };
+            _status = new Label { Dock = DockStyle.Bottom, AutoSize = false, Height = 30, TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(10, 0, 0, 0), Text = "就绪" };
 
             // 添加顺序：Fill 先加；需要占满整行宽度的 Top/Bottom 后加（后加 = 先布局 = 占满整条）
             Controls.Add(right);
@@ -136,7 +137,7 @@ namespace Toolkids.UI
             Text = text,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Padding = new Padding(12, 6, 12, 6),
+            Padding = new Padding(16, 8, 16, 8),
             Margin = new Padding(0, 0, 8, 0),
             FlatStyle = FlatStyle.Flat
         };
@@ -240,6 +241,7 @@ namespace Toolkids.UI
             _toolList.BeginUpdate();
             _toolList.Items.Clear();
             _iconList.Images.Clear();
+            _iconListSmall.Images.Clear();
 
             Category? cat = CurrentCategory;
             int count = 0;
@@ -253,7 +255,10 @@ namespace Toolkids.UI
                     {
                         imgKey = tool.FolderName;
                         if (!_iconList.Images.ContainsKey(imgKey))
+                        {
                             _iconList.Images.Add(imgKey, img);
+                            _iconListSmall.Images.Add(imgKey, img);
+                        }
                     }
 
                     var item = new ListViewItem(tool.DisplayName)

@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 using Toolkids.Services;
 using Toolkids.UI;
@@ -15,6 +16,8 @@ namespace Toolkids
             try { Application.SetHighDpiMode(HighDpiMode.PerMonitorV2); } catch { /* PE/老系统忽略 */ }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            // 全局默认字体调大一号，整体界面更“大方”
+            try { Application.SetDefaultFont(new Font("Microsoft YaHei UI", 10.5f)); } catch { }
 
             AppPaths paths = AppPaths.Create();
             var log = new Logger(paths.LogPath);
