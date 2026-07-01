@@ -50,10 +50,10 @@ namespace Toolkids.UI
             Text = "Toolkids 便携工具箱";
             StartPosition = FormStartPosition.CenterScreen;
             ClientSize = new Size(1120, 720);
-            MinimumSize = new Size(900, 580);
+            MinimumSize = new Size(1040, 680);
 
             // 顶部工具条（按内容自适应高度，避免高 DPI 裁剪）
-            var top = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, Padding = new Padding(10, 8, 10, 8) };
+            var top = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(10, 8, 10, 8) };
             var btnAddTool = MakeButton("添加软件");
             btnAddTool.Click += (s, e) => AddTool();
             var btnSettings = MakeButton("设置");
@@ -68,22 +68,17 @@ namespace Toolkids.UI
             top.Controls.Add(btnAbout);
 
             // 左侧分类
-            var left = new Panel { Dock = DockStyle.Left, Width = 240, Padding = new Padding(10) };
+            var left = new Panel { Dock = DockStyle.Left, Width = 260, Padding = new Padding(10) };
             var leftHeader = new Label { Text = "分类", Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2, 2, 0, 8), Font = new Font("Microsoft YaHei UI", 13f, FontStyle.Bold) };
             _categoryList = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
             _categoryList.SelectedIndexChanged += (s, e) => RefreshTools();
             _categoryList.ContextMenuStrip = BuildCategoryMenu();
 
-            var catButtons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = false, Padding = new Padding(0, 6, 0, 0) };
-            var bAdd = MakeButton("新建"); bAdd.Click += (s, e) => AddCategory();
-            var bRen = MakeButton("改名"); bRen.Click += (s, e) => RenameCategory();
-            var bDel = MakeButton("删除"); bDel.Click += (s, e) => DeleteCategory();
-            catButtons.Controls.Add(bAdd);
-            catButtons.Controls.Add(bRen);
-            catButtons.Controls.Add(bDel);
+            // 分类的新建/改名/删除走右键菜单（见 BuildCategoryMenu），这里给个提示
+            var catHint = new Label { Text = "💡 右键管理分类", Dock = DockStyle.Bottom, AutoSize = false, Height = Font.Height + 12, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true, Padding = new Padding(2, 0, 0, 0), ForeColor = _theme.SubtleForeground };
 
             left.Controls.Add(_categoryList);
-            left.Controls.Add(catButtons);
+            left.Controls.Add(catHint);
             left.Controls.Add(leftHeader);
 
             var splitter = new Splitter { Dock = DockStyle.Left, Width = 3 };
@@ -122,7 +117,7 @@ namespace Toolkids.UI
             right.Controls.Add(_emptyHint);
             right.Controls.Add(_toolList);
 
-            _status = new Label { Dock = DockStyle.Bottom, AutoSize = false, Height = 30, TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(10, 0, 0, 0), Text = "就绪" };
+            _status = new Label { Dock = DockStyle.Bottom, AutoSize = false, Height = Font.Height + 14, TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(10, 0, 0, 0), Text = "就绪" };
 
             // 添加顺序：Fill 先加；需要占满整行宽度的 Top/Bottom 后加（后加 = 先布局 = 占满整条）
             Controls.Add(right);
@@ -242,6 +237,8 @@ namespace Toolkids.UI
             _toolList.Items.Clear();
             _iconList.Images.Clear();
             _iconListSmall.Images.Clear();
+            int iconSz = _config.IconSize < 32 ? 64 : _config.IconSize;
+            if (_iconList.ImageSize.Width != iconSz) _iconList.ImageSize = new Size(iconSz, iconSz);
 
             Category? cat = CurrentCategory;
             int count = 0;
@@ -568,6 +565,7 @@ namespace Toolkids.UI
 
         private void OpenSettings()
         {
+            double oldFont = _config.FontSize;
             using var dlg = new SettingsForm(_config, _svc.Paths);
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
@@ -577,6 +575,8 @@ namespace Toolkids.UI
             ThemeManager.Apply(this, _theme);
             ApplyLayout();
             RefreshTools();
+            if (System.Math.Abs(_config.FontSize - oldFont) > 0.01)
+                Info("字体大小已保存，重启程序后生效。");
         }
 
         private void OpenAbout()

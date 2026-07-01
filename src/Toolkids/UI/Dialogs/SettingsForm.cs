@@ -14,6 +14,10 @@ namespace Toolkids.UI.Dialogs
 
         private readonly ComboBox _theme = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160, Anchor = AnchorStyles.Left };
         private readonly ComboBox _layout = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160, Anchor = AnchorStyles.Left };
+        private readonly ComboBox _fontSize = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160, Anchor = AnchorStyles.Left };
+        private readonly ComboBox _iconSize = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160, Anchor = AnchorStyles.Left };
+        private static readonly double[] FontVals = { 9, 10.5, 12, 14 };
+        private static readonly int[] IconVals = { 48, 64, 80, 96 };
         private readonly TextBox _dataDir = new() { Width = 200, Anchor = AnchorStyles.Left | AnchorStyles.Right };
         private readonly CheckBox _confirmConflict = new() { Text = "还原前若系统已存在同名项，弹出确认", AutoSize = true };
         private readonly CheckBox _askBackup = new() { Text = "软件退出后询问是否备份并清理", AutoSize = true };
@@ -40,6 +44,8 @@ namespace Toolkids.UI.Dialogs
         {
             _theme.Items.AddRange(new object[] { "深色", "浅色" });
             _layout.Items.AddRange(new object[] { "网格", "列表" });
+            _fontSize.Items.AddRange(new object[] { "小", "中", "大", "特大" });
+            _iconSize.Items.AddRange(new object[] { "小", "中", "大", "特大" });
 
             var grid = new TableLayoutPanel { ColumnCount = 2, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, Dock = DockStyle.Fill, Padding = new Padding(16) };
             grid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -48,6 +54,8 @@ namespace Toolkids.UI.Dialogs
             int r = 0;
             AddField(grid, "主题：", _theme, ref r);
             AddField(grid, "软件区布局：", _layout, ref r);
+            AddField(grid, "字体大小（重启生效）：", _fontSize, ref r);
+            AddField(grid, "图标大小：", _iconSize, ref r);
             AddField(grid, "软件目录（Data）：", _dataDir, ref r);
 
             AddSpan(grid, _confirmConflict, ref r);
@@ -99,6 +107,8 @@ namespace Toolkids.UI.Dialogs
         {
             _theme.SelectedIndex = string.Equals(_cfg.Theme, "light", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             _layout.SelectedIndex = string.Equals(_cfg.Layout, "list", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            int fi = Array.IndexOf(FontVals, _cfg.FontSize); _fontSize.SelectedIndex = fi < 0 ? 1 : fi;
+            int ii = Array.IndexOf(IconVals, _cfg.IconSize); _iconSize.SelectedIndex = ii < 0 ? 1 : ii;
             _dataDir.Text = _cfg.DataDir;
             _confirmConflict.Checked = _cfg.Settings.ConfirmConflictBeforeRestore;
             _askBackup.Checked = _cfg.Settings.AskBackupOnExit;
@@ -109,6 +119,8 @@ namespace Toolkids.UI.Dialogs
         {
             _cfg.Theme = _theme.SelectedIndex == 1 ? "light" : "dark";
             _cfg.Layout = _layout.SelectedIndex == 1 ? "list" : "grid";
+            _cfg.FontSize = FontVals[_fontSize.SelectedIndex];
+            _cfg.IconSize = IconVals[_iconSize.SelectedIndex];
             string dir = _dataDir.Text.Trim();
             _cfg.DataDir = string.IsNullOrWhiteSpace(dir) ? "Data" : dir;
             _cfg.Settings.ConfirmConflictBeforeRestore = _confirmConflict.Checked;

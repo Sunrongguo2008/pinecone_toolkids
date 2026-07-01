@@ -19,6 +19,12 @@ namespace Toolkids.Models
         /// <summary>软件容器目录名，相对工具箱根目录。</summary>
         public string DataDir { get; set; } = "Data";
 
+        /// <summary>全局字体大小（磅）。改动需重启生效。</summary>
+        public double FontSize { get; set; } = 10.5;
+
+        /// <summary>软件图标大小（像素）。</summary>
+        public int IconSize { get; set; } = 64;
+
         /// <summary>全部分类。</summary>
         public List<Category> Categories { get; set; } = new();
 
